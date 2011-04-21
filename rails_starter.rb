@@ -2,22 +2,23 @@
 create_file ".rvmrc", "rvm use ruby-1.9.2-p180"
 
 # gemfile
-gem "haml-rails"
-gem "sass"
-gem "nifty-generators"
-gem "simple_form"
-gem "jquery-rails"
+gem 'haml-rails'
+gem 'sass'
+gem 'simple_form'
+gem 'jquery-rails'
 
 # hpricot and ruby_parser required by haml
-gem "hpricot", :group => :development
-gem "ruby_parser", :group => :development
+gem 'hpricot', :group => :development
+gem 'ruby_parser', :group => :development
 
-# testing environment
-gem "rails3-generators", :group => [ :development ]
-gem "rspec-rails", :group => [ :development, :test ]
-gem "factory_girl_rails", :group => [ :development, :test ]
-gem "webrat", :group => :test
-gem "autotest", :group => :test
+# development and testing environments
+gem 'nifty-generators', :group => [ :development ]
+gem 'rails3-generators', :group => [ :development ]
+gem 'rspec-rails', :group => [ :development, :test ]
+gem 'factory_girl_rails', :group => [ :development, :test ]
+gem 'webrat', :group => :test
+gem 'autotest', :group => :test
+gem 'mocha', :group => :test
 
 # install gems to a local vendor directory
 run 'bundle install --path vendor'
@@ -36,7 +37,7 @@ generate 'jquery:install --ui'
 
 # tests
 generate 'rspec:install'
-inject_into_file 'spec/spec_helper.rb', "\nrequire 'factory_girl'", :after => "require 'rspec/rails'"
+inject_into_file 'spec/spec_helper.rb', "\nrequire 'factory_girl'\nrequire 'mocha'", :after => "require 'rspec/rails'"
 
 # application defaults
 inject_into_file 'config/application.rb', :after => "config.filter_parameters += [:password]" do
