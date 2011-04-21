@@ -6,13 +6,13 @@ For views I'm using
 
 * JQuery
 * Haml
-* Sass
-* Simple_Form
+* Sass, actually Scss
+* Simple_Form for which I've included some Scss
 
 For testing I've become accustom to
 
 * Factory_Girl
 * RSpec
-* Webrat
+* Webrat, but that might change to Capybara
 
 Fork these if you like, and do what you will, but I'm offering no warrantees. Remember these are the work of a relative novice.
