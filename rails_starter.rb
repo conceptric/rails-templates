@@ -1,23 +1,29 @@
 # create rvmrc file
 create_file ".rvmrc", "rvm use ruby-1.9.2-p180"
 
-# gemfile
+# gemfile   
 gem 'haml-rails'
+gem 'sass', '3.1.1'
 gem 'simple_form'
 gem 'jquery-rails'
 
 # hpricot and ruby_parser required by haml
 gem 'hpricot', :group => :development
 gem 'ruby_parser', :group => :development
+gem 'hirb', :group => :development
 
 # development and testing environments
+gem 'rake', '0.8.7', :group => [ :development ]
 gem 'nifty-generators', :group => [ :development ]
 gem 'rails3-generators', :group => [ :development ]
 gem 'rspec-rails', :group => [ :development, :test ]
 gem 'factory_girl_rails', :group => [ :development, :test ]
-gem 'webrat', :group => :test
-gem 'autotest', :group => :test
-gem 'mocha', :group => :test
+gem 'capybara', :group => [ :development, :test ]
+gem 'mocha', :group => [ :development, :test ]
+gem 'launchy', :group => :test
+
+# Replace the mysql2 gem because the latest doesn't work with 3.0.x
+gsub_file 'Gemfile', "gem 'mysql2'", "gem 'mysql2', '0.2.6'"
 
 # install gems to a local vendor directory
 run 'bundle install --path vendor'
