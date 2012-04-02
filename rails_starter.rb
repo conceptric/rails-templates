@@ -1,20 +1,11 @@
-# create rvmrc file
-create_file ".rvmrc", "rvm use ruby-1.9.2-p180"
+# Manage the Ruby version
+create_file ".rvmrc", "rvm use ruby-1.9.3-p125"
 
-# gemfile   
-gem 'haml-rails'
-gem 'sass', '3.1.1'
+# Application gems   
 gem 'simple_form'
-gem 'jquery-rails'
 
-# hpricot and ruby_parser required by haml
-gem 'hpricot', :group => :development
-gem 'ruby_parser', :group => :development
-gem 'hirb', :group => :development
-
-# development and testing environments
-gem 'rake', '0.8.7', :group => [ :development ]
-gem 'nifty-generators', :group => [ :development ]
+# Development and testing environments
+gem 'rake', :group => [ :development ]
 gem 'rails3-generators', :group => [ :development ]
 gem 'rspec-rails', :group => [ :development, :test ]
 gem 'factory_girl_rails', :group => [ :development, :test ]
@@ -22,25 +13,34 @@ gem 'capybara', :group => [ :development, :test ]
 gem 'mocha', :group => [ :development, :test ]
 gem 'launchy', :group => :test
 
-# Replace the mysql2 gem because the latest doesn't work with 3.0.x
-gsub_file 'Gemfile', "gem 'mysql2'", "gem 'mysql2', '0.2.6'"
+# Deployment
+gem 'rvm', :group => [ :deployment ]
+gem 'rvm-capistrano', :group => [ :deployment ]
+gem 'capistrano', :group => [ :deployment ]
+gem 'capistrano-ext', :group => [ :deployment ]
 
-# install gems to a local vendor directory
+# Bundle gems to a local vendor directory
 run 'bundle install --path vendor'
 run "echo 'vendor/ruby' >> .gitignore"
 
-generate 'nifty:config'
+# RSpec
+generate 'rspec:install'                
+inject_into_file 'spec/spec_helper.rb', "\nrequire 'factory_girl'\nrequire 'mocha'", :after => "require 'rspec/rails'"
+gsub_file 'spec/spec_helper.rb', '# config.mock_with :mocha', 'config.mock_with :mocha'
+gsub_file 'spec/spec_helper.rb', 'config.mock_with :rspec', '# config.mock_with :rspec'
+gsub_file 'spec/spec_helper.rb', 'config.fixture_path', '# config.fixture_path'
 
-# views
+# Capybara
+create_file "spec/support/capybara.rb", <<-eos
+require 'capybara/rails'
+require 'capybara/rspec'
+eos
+
+# Views and forms
 generate 'simple_form:install'
-generate 'nifty:layout --haml'
-remove_file 'app/views/layouts/application.html.erb' # use nifty layout instead
 
-# use SCSS rather than SASS    
-run 'bundle exec sass-convert public/stylesheets/sass/application.sass public/stylesheets/sass/application.scss'
-append_to_file 'public/stylesheets/sass/application.scss' do
-  <<-eos 
-  
+# Add SCSS styling for simple_form    
+create_file "app/assets/stylesheets/simpleform.scss", <<-eos   
 .simple_form {
   label {  
   float: left;  
@@ -56,33 +56,15 @@ append_to_file 'public/stylesheets/sass/application.scss' do
     margin: 0; }
   div.boolean label {  
     float: none;  
-    margin: 0; } }
-    
+    margin: 0; } }    
   eos
-end
-remove_file "public/stylesheets/sass/application.sass"
-
-# scripts
-remove_file 'public/javascripts/rails.js' # jquery-rails replaces this
-generate 'jquery:install --ui'
-
-# tests
-generate 'rspec:install'                
-inject_into_file 'spec/spec_helper.rb', "\nrequire 'factory_girl'\nrequire 'mocha'", :after => "require 'rspec/rails'"
-gsub_file 'spec/spec_helper.rb', '# config.mock_with :mocha', 'config.mock_with :mocha'
-gsub_file 'spec/spec_helper.rb', 'config.mock_with :rspec', '# config.mock_with :rspec'
-gsub_file 'spec/spec_helper.rb', 'config.fixture_path', '# config.fixture_path'
                       
-                      
-# application defaults  
-inject_into_file 'config/application.rb', 'jquery rails', :after => 'config.action_view.javascript_expansions[:defaults] = %w('
+# Set the application defaults  
 inject_into_file 'config/application.rb', :after => "config.filter_parameters += [:password]" do
-  <<-eos
-    
+  <<-eos    
     # Customize generators
     config.generators do |g|
       g.stylesheets false
-      g.template_engine :haml
       g.form_builder :simple_form
       g.test_framework :rspec  
       g.fallbacks[:rspec] = :test_unit
@@ -91,19 +73,14 @@ inject_into_file 'config/application.rb', :after => "config.filter_parameters +=
   eos
 end
 
-# database
+# Database
 rake "db:create", :env => 'development'
 rake "db:create", :env => 'test'
 rake "db:migrate"
 run 'cp config/database.yml config/database.example'
 run "echo 'config/database.yml' >> .gitignore"
 
-# housekeeping
-remove_file 'public/index.html'
-remove_file 'rm public/images/rails.png'
-
-
-# commit to git
+# Commit to git
 git :init
 git :add => "."
 git :commit => "-a -m 'create initial application'"
